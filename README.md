@@ -1,2 +1,3 @@
 arabidopsis
 ===========
+Project containing samples.
