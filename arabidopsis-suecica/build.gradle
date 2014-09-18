@@ -29,6 +29,6 @@ jar {
 }
 
 task wrapper(type: Wrapper) {
-  description = 'crates gradle wrapper, thanks to that build can be started on other machine without downloading and installing gradle, gradlew can be used instead of gralde'
+  description = 'crates gradle wrapper, thanks to that build can be started on other machine without downloading and installing gradle, gradlew can be used instead of gradle'
   gradleVersion = '2.1'
 }
