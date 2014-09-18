@@ -1,5 +1,6 @@
 package com.mleczey.darkages;
 
+import static com.mleczey.darkages.KingdomsMatcher.hasOtherKingdoms;
 import com.mleczey.darkages.person.Folk;
 import com.mleczey.darkages.person.King;
 import com.mleczey.darkages.person.knight.BlackKnight;
@@ -29,16 +30,11 @@ import static java.util.stream.Collectors.maxBy;
 import static java.util.stream.Collectors.partitioningBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import java.util.stream.StreamSupport;
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
-import org.hamcrest.internal.SelfDescribingValue;
 import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -163,27 +159,6 @@ public class DarkAgesTest {
         kingdoms,
         both(hasItem(greatKingdomKingKingdom)).and(hasOtherKingdoms(greatKingdomKingKingdom))
     );
-  }
-
-  private Matcher<? super Iterable<? super Kingdom>> hasOtherKingdoms(final Kingdom kingdom) {
-    return new TypeSafeMatcher<Iterable<? super Kingdom>>() {
-
-      @Override
-      protected boolean matchesSafely(Iterable<? super Kingdom> item) {
-        return StreamSupport.stream(item.spliterator(), false).anyMatch(k -> k.equals(kingdom));
-      }
-
-      @Override
-      public void describeTo(Description description) {
-        description.appendText("other kingdeom different from kingdom ")
-            .appendDescriptionOf(new SelfDescribingValue<Kingdom>(kingdom) {
-              @Override
-              public void describeTo(Description description) {
-                super.describeTo(description);
-              }
-            });
-      }
-    };
   }
 
   @Test
@@ -390,7 +365,7 @@ public class DarkAgesTest {
   public void testGatheringNamesMethods() {
     //when
     String folksNames = this.gatherFolksNames();
-    String folksNamesForEach = this.getherFolksNamesWithForEach();
+    String folksNamesForEach = this.gatherFolksNamesWithForEach();
     String folksNamesReduce = this.gatherFolksNamesWithReduce();
     String folksNamesGlue = this.gatherFolksNamesWithNameGlue();
     String folksNamesCollector = this.gatherFolksNamesWithCollector();
@@ -413,7 +388,7 @@ public class DarkAgesTest {
     return folksNames + "\\";
   }
 
-  private String getherFolksNamesWithForEach() {
+  private String gatherFolksNamesWithForEach() {
     StringBuilder folksNames = new StringBuilder("/");
     this.world.getFolks()
         .map(Folk::getName)
