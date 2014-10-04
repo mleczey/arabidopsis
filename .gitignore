@@ -11,8 +11,21 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-# project specific
+# project arabidopsis-suecica specific
 /arabidopsis-suecica/build/
+/arabidopsis-suecica/buildSrc/.gradle/
 /arabidopsis-suecica/.nb-gradle/
 /arabidopsis-suecica/.gradle/
 /arabidopsis-suecica/.nb-gradle-properties
+
+# project arabidopsis-thaliana specific
+/arabidopsis-thaliana/build/
+/arabidopsis-thaliana/.nb-gradle/
+/arabidopsis-thaliana/.gradle/
+/arabidopsis-thaliana/.nb-gradle-properties
+
+#project cardaminopsis-halleri specific
+/cardaminopsis-halleri/build/
+/cardaminopsis-halleri/.nb-gradle/
+/cardaminopsis-halleri/.gradle/
+/cardaminopsis-halleri/.nb-gradle-properties
