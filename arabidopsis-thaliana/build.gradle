@@ -1,0 +1,20 @@
+println "Java version: ${JavaVersion.current()}"
+println "Gradle version: $gradle.gradleVersion"
+
+apply plugin: 'java'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile 'org.projectlombok:lombok:1.14.4'
+}
+
+task wrapper(type: Wrapper) {
+  description = 'crates gradle wrapper, thanks to that build can be started on other machine without downloading and installing gradle, gradlew can be used instead of gradle'
+  gradleVersion = '2.1'
+}
