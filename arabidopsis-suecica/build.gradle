@@ -1,11 +1,24 @@
-def currentJvm = org.gradle.internal.jvm.Jvm.current()
-println "Java version: $currentJvm"
-println "Gradle version: $gradle.gradleVersion"
+import com.mleczey.gradle.entities.ProjectVersion
+import com.mleczey.gradle.tasks.ReleaseVersionTask
 
 apply plugin: 'java'
+apply plugin: 'groovy'
 
+ext.versionPropertiesFileName = 'version.properties'
+
+task loadVersion {
+  group = 'versioning'
+  description = "loads application version from ${ProjectVersion.getPropertiesFileName(project)} file"
+
+  version = ProjectVersion.loadFromPropertiesFile(project)
+}
+
+description = 'project containing sample code'
 sourceCompatibility = JavaVersion.VERSION_1_8
-version = '0.0.1-SNAPSHOT'
+
+logger.quiet "project $name:${->version} - $description"
+logger.quiet "java version: ${JavaVersion.current()}"
+logger.quiet "gradle version: $gradle.gradleVersion"
 
 repositories {
   mavenCentral()
@@ -27,6 +40,126 @@ jar {
 }
 
 task wrapper(type: Wrapper) {
+  group = 'build setup'
   description = 'crates gradle wrapper, thanks to that build can be started on other machine without downloading and installing gradle, gradlew can be used instead of gradle'
+
   gradleVersion = '2.1'
+}
+
+// task exmaples
+task first << {
+  logger.quiet 'first task'
+}
+
+task second << {
+  logger.quiet 'second task'
+}
+
+first.finalizedBy second
+
+task printVersion {
+  group = 'versioning'
+  description = 'prints project version'
+
+  dependsOn = [second, first]
+
+  doFirst {
+    logger.quiet 'task bootstrap'
+  }
+  doLast {
+    logger.quiet "porject version: $version"
+  }
+}
+
+printVersion.doFirst {
+  logger.quiet 'before everything'
+}
+
+printVersion << {
+  logger.quiet 'after everything'
+}
+
+task third << {
+  logger.quiet 'third task'
+}
+
+third.dependsOn printVersion
+
+//task wirtten using default task
+//task makeRelease {
+//  group = 'versioning'
+//  description = 'executes project release'
+//
+//  inputs.property('release', version.release)
+//  outputs.file project.file(ProjectVersion.getPropertiesFileName(project))
+//
+//  doLast {
+//    ProjectVersion.updatePropertiesFile(project)
+//  }
+//}
+
+task makeRelease(type: ReleaseVersionTask) {
+  group = 'release'
+  description = "uses custom task, to update ${ProjectVersion.getPropertiesFileName(project)} file's release value to 'true' and update project version release property to true"
+
+  release = true
+  file = project.file(ProjectVersion.getPropertiesFileName(project))
+}
+
+task makePackage(type: Zip) {
+  group = 'release'
+  description = "makes a package from all main and test java sources and ${ProjectVersion.getPropertiesFileName(project)} file"
+
+  dependsOn = [makeRelease]
+
+  appendix = new Date().format('yyyyMMddHHmmss')
+  classifier = 'backup'
+  from jar.outputs.files
+  from testClasses.outputs.files
+
+  from(sourceSets*.allSource) {
+    into 'src'
+  }
+
+  from(rootDir) {
+    include ProjectVersion.getPropertiesFileName(project)
+  }
+}
+
+task makeBackup(type: Copy) {
+  group = 'release'
+  description = "makes a backup of task ${makePackage.name} result into $buildDir/backup"
+
+  from makePackage.outputs.files
+  into "$buildDir/backup"
+}
+
+task release {
+  group = 'make release'
+  description = ''
+
+  dependsOn = [makeBackup]
+
+  doLast {
+    logger.quiet 'release finished with success'
+  }
+}
+
+tasks.addRule("Pattern: increment<Key>Version - increments specified version key") { String taskName ->
+  if (taskName.startsWith('increment') && taskName.endsWith('Version')) {
+    task (taskName) << {
+      String key = (taskName - 'increment' - 'Version').toLowerCase()
+      String previousVersion = version.toString()
+
+      if (version[key] || 0 == version[key]) {
+        version[key]++
+      } else {
+        new GradleException("invalid version name of task increment[$key]Version, allowed numbers: 'Major', 'Minor', 'Maintenance'")
+      }
+
+      logger.quiet "Changing version from $previousVersion to $version"
+
+      ProjectVersion.updatePropertiesFileWithNumber(project, key)
+    }
+  }
 }
